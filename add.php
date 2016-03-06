@@ -5,6 +5,14 @@ require_once('functions.php');
 
 $dbh = connectDb();
 
+session_start();
+
+$sql = 'select * from users where id = :id';
+$stmt = $dbh->prepare($sql);
+$stmt->bindParam(':id', $_SESSION['id']);
+$stmt->execute();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
 {
     $title = $_POST['title'];
@@ -22,14 +30,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
     if (empty($errors))
     {
         $sql = 'insert into posts ';
-        $sql.= '(title, body, created_at, updated_at) ';
+        $sql.= '(title, body, name, created_at, updated_at) ';
         $sql.= ' values ';
-        $sql.= '(:title, :body, ';
+        $sql.= '(:title, :body, :name,';
         $sql.= 'now(), now())';
 
         $stmt = $dbh->prepare($sql);
         $stmt->bindparam(':title', $title);
         $stmt->bindparam(':body', $body);
+        $stmt->bindparam(':name', $user['name']);
         $stmt->execute();
 
         header('Location: index.php');
